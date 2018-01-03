@@ -38,24 +38,24 @@ def train(sess, y, x_hold, y_hold, keep_prob, X, Y, valX, valY, lrate=0.5, epsil
     flat_len = dim_prod(x_hold._shape_as_list())
     X = X.reshape((X.shape[0],flat_len))
 
-    print 'Starting training session...'
+    print('Starting training session...')
 
     sess.run(tf.initialize_all_variables())
     batch_num = 0
     batches = batchify(X,Y,batch_size)
-    print 'Number of batches:',len(batches)
+    print('Number of batches:',len(batches))
     for i in range(n_epoch):
         avg_acc = 0
         random.shuffle(batches)
         for batchX,batchY in batches:
             avg_acc = avg_acc + accuracy.eval(session=sess, feed_dict={x_hold:batchX, y_hold:batchY, keep_prob:1})
             train_step.run(session=sess,feed_dict={x_hold:batchX, y_hold:batchY, keep_prob:0.5})
-        print 'Epoch '+str(i)+': '+str(avg_acc/len(batches))
+        print('Epoch '+str(i)+': '+str(avg_acc/len(batches)))
     if (not valX is None) & (not valY is None):
         #Validation
         valX = valX.reshape((valX.shape[0],flat_len))
         val_accuracy = accuracy.eval(session=sess,feed_dict={x_hold:valX, y_hold:valY, keep_prob:1})
-        print 'Val acc:',val_accuracy
+        print('Val acc:',val_accuracy)
 
     if not save_path is None:
         saver = tf.train.Saver(tf.all_variables())
@@ -64,7 +64,7 @@ def train(sess, y, x_hold, y_hold, keep_prob, X, Y, valX, valY, lrate=0.5, epsil
         writer = tf.train.SummaryWriter(save_path+'_graph',sess.graph)
         writer.flush()
         writer.close()
-        print 'Model saved'
+        print('Model saved')
     return val_accuracy
 
 #Test a model

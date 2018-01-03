@@ -91,16 +91,12 @@ def train_net():
                     batch_size=100,
                     print_epoch=1,
                     save_path=model_path)
-    print "Accuracy:",acc
+    print("Accuracy:",acc)
     sess.close()
 
 #Basic sliding window detector to find faces
 #Returns an image showing only the faces along with the sliding window mask (before blurring)
-def localize(img,model_path):
-    sess = tfac.start_sess()
-    y,x_hold,y_hold,keep_prob = build_net(sess)
-    saver = tf.train.Saver()
-    saver.restore(sess,model_path)
+def localize(img, y, sess, x_hold, keep_prob):
 
     #Run all detection at a fixed size
     img = cv2.resize(img,DET_SIZE)
@@ -108,15 +104,15 @@ def localize(img,model_path):
     #Run sliding windows of different sizes
     for bx in range(WIN_MIN,WIN_MAX,WIN_STRIDE):
         by = bx
-        for i in xrange(0, img.shape[1]-bx, X_STEP):
-            for j in xrange(0, img.shape[0]-by, Y_STEP):
+        for i in range(0, img.shape[1]-bx, X_STEP):
+            for j in range(0, img.shape[0]-by, Y_STEP):
                 sub_img = cv2.resize(img[i:i+bx,j:j+by],face_ds.IN_SIZE)
                 X = sub_img.reshape((1,tfac.dim_prod(face_ds.IN_SIZE)))
                 out = y.eval(session=sess,feed_dict={x_hold:X,keep_prob:1})[0]
                 if out[0] >= CONF_THRESH:
                     mask[i:i+bx,j:j+by] = mask[i:i+bx,j:j+by]+1
 
-    sess.close()
+    #sess.close()
     mask = np.uint8(255*mask/np.max(mask))
     faces = img*(cv2.threshold(cv2.blur(mask,BLUR_DIM),0,255,cv2.THRESH_OTSU)[1]/255)
     return (faces,mask)
